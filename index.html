@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>星河集</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="book" id="book">
+    <div class="page" id="page"></div>
+  </div>
+
+  <button class="back-btn" id="backBtn" aria-label="返回上一页">‹</button>
+
+  <template id="template-cover">
+    <div class="page-cover">
+      <h1>星河集</h1>
+      <p class="subtitle">献给星河和打开这本书的你</p>
+      <p class="hint">点击翻开</p>
+    </div>
+  </template>
+
+  <template id="template-rose">
+    <div class="rose-container">
+      <canvas id="roseCanvas"></canvas>
+      <div class="rose-title">蔷薇</div>
+      <div class="rose-hint">每一根刺，都有关于他的故事</div>
+    </div>
+  </template>
+
+  <template id="template-galaxy">
+    <div class="galaxy-container">
+      <canvas id="galaxyCanvas"></canvas>
+      <div class="galaxy-title">星河</div>
+      <div class="galaxy-status" id="galaxyStatus"></div>
+      <div class="galaxy-input-wrap" id="galaxyInputWrap">
+        <input type="text" id="galaxyInput" maxlength="60" placeholder="写一句话，让它变成星星..." autocomplete="off" />
+        <button id="galaxySubmit" aria-label="发送"><span>✦</span></button>
+      </div>
+    </div>
+  </template>
+
+<template id="template-garden">
+  <div class="garden-container">
+    <canvas id="gardenCanvas"></canvas>
+    <div class="garden-ui">
+      <div class="garden-title">花海</div>
+      <div class="garden-status" id="gardenStatus">正在培育一朵花</div>
+      <div class="garden-progress">
+        <span class="progress-item" id="progressSun">☀ 0 / 5</span>
+        <span class="progress-item" id="progressWater">💧 0 / 5</span>
+      </div>
+    </div>
+    <div class="garden-actions">
+      <button class="garden-btn" id="btnSun">☀ 光照</button>
+      <button class="garden-btn" id="btnWater">💧 浇水</button>
+    </div>
+  </div>
+</template>
+
+  <template id="template-forum">
+    <div class="chronicle-container">
+      <div class="chronicle-title">编年史</div>
+      <div class="chronicle-stats">
+        <div class="stat-card">
+          <div class="stat-value" id="statStars">—</div>
+          <div class="stat-label">今年的星星</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statFlowers">—</div>
+          <div class="stat-label">花海里的花</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statNodes">—</div>
+          <div class="stat-label">浏览数</div>
+        </div>
+      </div>
+      <div class="chronicle-timeline" id="chronicleTimeline">
+        <div class="chronicle-loading">正在翻开这一年的记忆...</div>
+      </div>
+    </div>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
