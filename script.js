@@ -309,10 +309,18 @@ function bindGalaxyInput() {
   const submitBtn = document.getElementById('galaxySubmit');
   if (!input || !submitBtn) return;
 
-  async function submitMessage() {
+   async function submitMessage() {
     const message = input.value.trim();
     if (!message) return;
 
+    // 检查是否在收集期
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const isCollecting = (month === 10 || month === 11);
+    if (!isCollecting) {
+      showGalaxyToast('现在不是收集期，暂时不能留言哦');
+      return;
+    }
     if (!supabaseClient) {
       createRisingStar(message);
       input.value = '';
@@ -558,9 +566,38 @@ function galaxyLoop() {
 function updateGalaxyStatus() {
   const status = document.getElementById('galaxyStatus');
   if (!status) return;
-  status.textContent = '留言收集期 · 写下你的星光';
+
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+
+  let season = 'idle';
+
+  // 12月1日~7日：流星雨回看期
+  if (month === 12 && day >= 1 && day <= 7) {
+    season = 'meteor';
+  }
+  // 10月1日~11月30日：收集期
+  else if (month === 10 || month === 11) {
+    season = 'collecting';
+  }
+  // 其他：沉寂
+  else {
+    season = 'idle';
+  }
+
   const inputWrap = document.getElementById('galaxyInputWrap');
-  if (inputWrap) inputWrap.classList.remove('hidden');
+
+  if (season === 'collecting') {
+    status.textContent = '留言收集期 · 写下你的星光';
+    if (inputWrap) inputWrap.classList.remove('hidden');
+  } else if (season === 'meteor') {
+    status.textContent = '✦ 流星雨进行中 ✦';
+    if (inputWrap) inputWrap.classList.add('hidden');
+  } else {
+    status.textContent = '静候下一次收集期';
+    if (inputWrap) inputWrap.classList.add('hidden');
+  }
 }
 
 // =====================
@@ -954,7 +991,7 @@ function getTodayKey() {
 
 function hasActedToday() {
   // ★★★ 测试模式：true = 无限点，false = 一天一次 ★★★
-  const GARDEN_TEST_MODE = true;
+  const GARDEN_TEST_MODE = false;
   if (GARDEN_TEST_MODE) return false;
 
   const key = 'garden_last_action_' + getDeviceFingerprint();
