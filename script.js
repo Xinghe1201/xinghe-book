@@ -828,8 +828,7 @@ function showRoseCard(thorn) {
   content.textContent = thorn.node.content || '';
   card.appendChild(title);
   card.appendChild(content);
-  const canvasRect = roseCanvas.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
+ 
 
   // 垂直居中显示，避免被上下裁掉
   card.style.top = '50%';
