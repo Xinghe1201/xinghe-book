@@ -872,6 +872,110 @@ function showRoseCard(thorn) {
   setTimeout(() => { if (card.parentElement) card.remove(); }, 8000);
 }
 
+function hideRoseCard() {
+  const container = roseCanvas.parentElement;
+  if (!container) return;
+  container.querySelectorAll('.rose-card').forEach(el => el.remove());
+}
+
+function drawRose() {
+  const ctx = roseCtx;
+  const w = roseCanvas.width;
+  const h = roseCanvas.height;
+  ctx.clearRect(0, 0, w, h);
+  const centerX = w / 2;
+  const stemTop = h * 0.48;
+  const stemBottom = h * 0.92;
+
+  // 花茎
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.lineWidth = 8;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(centerX, stemTop);
+  for (let y = stemTop; y <= stemBottom; y += 4) {
+    const t = (y - stemTop) / (stemBottom - stemTop);
+    ctx.lineTo(centerX + Math.sin(t * Math.PI) * 6, y);
+  }
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(centerX, stemTop);
+  for (let y = stemTop; y <= stemBottom; y += 4) {
+    const t = (y - stemTop) / (stemBottom - stemTop);
+    ctx.lineTo(centerX + Math.sin(t * Math.PI) * 6, y);
+  }
+  ctx.stroke();
+
+  // 玫瑰粒子
+  roseRotation += 0.003;
+  const projected = roseParticles.map(p => {
+    const proj = project3D(p, roseRotation);
+    return { p, proj };
+  }).sort((a, b) => a.proj.z - b.proj.z);
+
+  projected.forEach(({ p, proj }) => {
+    p.phase += p.speed;
+    const breath = Math.sin(p.phase) * 0.3;
+    const px = proj.x + Math.cos(p.phase * 0.7) * 0.8;
+    const py = proj.y + Math.sin(p.phase * 0.5) * 0.8;
+    const size = p.r * proj.scale * (1 + breath * 0.2);
+    const depthAlpha = Math.min(1, Math.max(0.2, (proj.z + 0.5) / 1.5));
+    const alpha = p.alpha * depthAlpha;
+    ctx.fillStyle = 'hsla(' + p.hue + ', 70%, ' + p.light + '%, ' + (alpha * 0.2) + ')';
+    ctx.beginPath();
+    ctx.arc(px, py, size * 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'hsla(' + p.hue + ', 75%, ' + (p.light + 12) + '%, ' + alpha + ')';
+    ctx.beginPath();
+    ctx.arc(px, py, size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // 刺
+  roseThorns.forEach(thorn => {
+    thorn.pulse += 0.03;
+    const isHovered = thorn === roseHoveredThorn;
+    const glowScale = isHovered ? 1.8 : 1 + Math.sin(thorn.pulse) * 0.1;
+    const glow = ctx.createRadialGradient(thorn.x, thorn.y, 0, thorn.x, thorn.y, 14 * glowScale);
+    if (isHovered) {
+      glow.addColorStop(0, 'rgba(255, 230, 180, 0.7)');
+      glow.addColorStop(1, 'rgba(255, 230, 180, 0)');
+    } else {
+      glow.addColorStop(0, 'rgba(180, 210, 255, 0.18)');
+      glow.addColorStop(1, 'rgba(180, 210, 255, 0)');
+    }
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(thorn.x, thorn.y, 14 * glowScale, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(thorn.x, thorn.y);
+    const len = thorn.size * 0.9;
+    const wid = thorn.size * 0.18;
+    const grad = ctx.createLinearGradient(0, 0, thorn.side * len, 0);
+    if (isHovered) {
+      grad.addColorStop(0, 'rgba(255, 245, 210, 0.9)');
+      grad.addColorStop(1, 'rgba(255, 220, 160, 0.5)');
+    } else {
+      grad.addColorStop(0, 'rgba(220, 235, 255, 0.55)');
+      grad.addColorStop(1, 'rgba(160, 190, 230, 0.2)');
+    }
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, -wid);
+    ctx.lineTo(thorn.side * len, 0);
+    ctx.lineTo(0, wid);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+
 function roseLoop() {
   if (!roseInitialized) return;
   drawRose();
