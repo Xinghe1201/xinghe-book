@@ -830,10 +830,17 @@ function showRoseCard(thorn) {
   card.appendChild(content);
   const canvasRect = roseCanvas.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
-  const x = canvasRect.left - containerRect.left + thorn.x;
-  const y = canvasRect.top - containerRect.top + thorn.y;
-  card.style.left = (x + (thorn.side === -1 ? -240 : 30)) + 'px';
-  card.style.top = (y - 40) + 'px';
+
+  // 垂直居中显示，避免被上下裁掉
+  card.style.top = '50%';
+  card.style.transform = 'translateY(-50%)';
+
+  // 水平位置：刺在左 → 卡片在右；刺在右 → 卡片在左
+  if (thorn.side === -1) {
+    card.style.left = '55%';
+  } else {
+    card.style.left = '5%';
+  }
   container.appendChild(card);
   requestAnimationFrame(() => card.classList.add('show'));
   setTimeout(() => { if (card.parentElement) card.remove(); }, 5000);
