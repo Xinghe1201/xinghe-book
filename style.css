@@ -616,3 +616,41 @@ h2 {
   border: 1px solid rgba(140, 180, 230, 0.3);
   transition: all 0.3s;
 }
+
+/* 手机端卡片适配 */
+@media (max-width: 600px) {
+  .rose-card {
+    max-width: none !important;
+    width: 86vw !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    max-height: 72vh;
+    overflow-y: auto;
+    padding: 20px 22px;
+  }
+
+  .rose-card.show {
+    transform: translate(-50%, -50%) !important;
+  }
+
+  .rose-card h3 {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+  }
+
+  .rose-card p {
+    font-size: 0.9em;
+    line-height: 1.9;
+    color: #d0dce8;
+  }
+}
+
+/* 卡片滚动条美化（可选） */
+.rose-card::-webkit-scrollbar {
+  width: 4px;
+}
+.rose-card::-webkit-scrollbar-thumb {
+  background: rgba(140, 180, 230, 0.3);
+  border-radius: 2px;
+}
