@@ -830,16 +830,38 @@ function showRoseCard(thorn) {
   card.appendChild(content);
  
 
-  // 垂直居中显示，避免被上下裁掉
-  card.style.top = '50%';
-  card.style.transform = 'translateY(-50%)';
+  const canvasRect = roseCanvas.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  const x = canvasRect.left - containerRect.left + thorn.x;
+  const y = canvasRect.top - containerRect.top + thorn.y;
 
-  // 水平位置：刺在左 → 卡片在右；刺在右 → 卡片在左
+  // 卡片尺寸（大致）
+  const cardW = 260;
+  const cardH = 220;
+
+  // 垂直位置：靠近刺，但不超出容器
+  let cardTop = y - cardH / 2;
+  const minTop = 20;
+  const maxTop = containerRect.height - cardH - 20;
+  if (cardTop < minTop) cardTop = minTop;
+  if (cardTop > maxTop) cardTop = maxTop;
+
+  // 水平位置：靠近刺，但不超出容器
+  let cardLeft;
   if (thorn.side === -1) {
-    card.style.left = '55%';
+    // 刺在左边 → 卡片放右边
+    cardLeft = x + 30;
   } else {
-    card.style.left = '5%';
+    // 刺在右边 → 卡片放左边
+    cardLeft = x - cardW - 30;
   }
+  const minLeft = 10;
+  const maxLeft = containerRect.width - cardW - 10;
+  if (cardLeft < minLeft) cardLeft = minLeft;
+  if (cardLeft > maxLeft) cardLeft = maxLeft;
+
+  card.style.left = cardLeft + 'px';
+  card.style.top = cardTop + 'px';
   container.appendChild(card);
   requestAnimationFrame(() => card.classList.add('show'));
   setTimeout(() => { if (card.parentElement) card.remove(); }, 5000);
