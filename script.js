@@ -828,146 +828,48 @@ function showRoseCard(thorn) {
   content.textContent = thorn.node.content || '';
   card.appendChild(title);
   card.appendChild(content);
- 
 
-  const canvasRect = roseCanvas.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-  const x = canvasRect.left - containerRect.left + thorn.x;
-  const y = canvasRect.top - containerRect.top + thorn.y;
+  // 判断是否手机端
+  const isMobile = window.innerWidth <= 600;
 
-  // 卡片尺寸（大致）
-  const cardW = 260;
-  const cardH = 220;
-
-  // 垂直位置：靠近刺，但不超出容器
-  let cardTop = y - cardH / 2;
-  const minTop = 20;
-  const maxTop = containerRect.height - cardH - 20;
-  if (cardTop < minTop) cardTop = minTop;
-  if (cardTop > maxTop) cardTop = maxTop;
-
-  // 水平位置：靠近刺，但不超出容器
-  let cardLeft;
-  if (thorn.side === -1) {
-    // 刺在左边 → 卡片放右边
-    cardLeft = x + 30;
+  if (isMobile) {
+    // 手机：CSS 完全控制位置，JS 不设 left/top
+    card.style.left = '';
+    card.style.top = '';
   } else {
-    // 刺在右边 → 卡片放左边
-    cardLeft = x - cardW - 30;
-  }
-  const minLeft = 10;
-  const maxLeft = containerRect.width - cardW - 10;
-  if (cardLeft < minLeft) cardLeft = minLeft;
-  if (cardLeft > maxLeft) cardLeft = maxLeft;
+    // 电脑：JS 计算贴近刺的位置
+    const canvasRect = roseCanvas.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    const x = canvasRect.left - containerRect.left + thorn.x;
+    const y = canvasRect.top - containerRect.top + thorn.y;
 
-  card.style.left = cardLeft + 'px';
-  card.style.top = cardTop + 'px';
+    const cardW = 260;
+    const cardH = 220;
+
+    let cardTop = y - cardH / 2;
+    const minTop = 20;
+    const maxTop = containerRect.height - cardH - 20;
+    if (cardTop < minTop) cardTop = minTop;
+    if (cardTop > maxTop) cardTop = maxTop;
+
+    let cardLeft;
+    if (thorn.side === -1) {
+      cardLeft = x + 30;
+    } else {
+      cardLeft = x - cardW - 30;
+    }
+    const minLeft = 10;
+    const maxLeft = containerRect.width - cardW - 10;
+    if (cardLeft < minLeft) cardLeft = minLeft;
+    if (cardLeft > maxLeft) cardLeft = maxLeft;
+
+    card.style.left = cardLeft + 'px';
+    card.style.top = cardTop + 'px';
+  }
+
   container.appendChild(card);
   requestAnimationFrame(() => card.classList.add('show'));
-  setTimeout(() => { if (card.parentElement) card.remove(); }, 5000);
-}
-
-function hideRoseCard() {
-  const container = roseCanvas.parentElement;
-  if (!container) return;
-  container.querySelectorAll('.rose-card').forEach(el => el.remove());
-}
-
-function drawRose() {
-  const ctx = roseCtx;
-  const w = roseCanvas.width;
-  const h = roseCanvas.height;
-  ctx.clearRect(0, 0, w, h);
-  const centerX = w / 2;
-  const stemTop = h * 0.48;
-  const stemBottom = h * 0.92;
-
-  // 花茎
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-  ctx.lineWidth = 8;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(centerX, stemTop);
-  for (let y = stemTop; y <= stemBottom; y += 4) {
-    const t = (y - stemTop) / (stemBottom - stemTop);
-    ctx.lineTo(centerX + Math.sin(t * Math.PI) * 6, y);
-  }
-  ctx.stroke();
-
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(centerX, stemTop);
-  for (let y = stemTop; y <= stemBottom; y += 4) {
-    const t = (y - stemTop) / (stemBottom - stemTop);
-    ctx.lineTo(centerX + Math.sin(t * Math.PI) * 6, y);
-  }
-  ctx.stroke();
-
-  // 玫瑰粒子
-  roseRotation += 0.003;
-  const projected = roseParticles.map(p => {
-    const proj = project3D(p, roseRotation);
-    return { p, proj };
-  }).sort((a, b) => a.proj.z - b.proj.z);
-
-  projected.forEach(({ p, proj }) => {
-    p.phase += p.speed;
-    const breath = Math.sin(p.phase) * 0.3;
-    const px = proj.x + Math.cos(p.phase * 0.7) * 0.8;
-    const py = proj.y + Math.sin(p.phase * 0.5) * 0.8;
-    const size = p.r * proj.scale * (1 + breath * 0.2);
-    const depthAlpha = Math.min(1, Math.max(0.2, (proj.z + 0.5) / 1.5));
-    const alpha = p.alpha * depthAlpha;
-    ctx.fillStyle = 'hsla(' + p.hue + ', 70%, ' + p.light + '%, ' + (alpha * 0.2) + ')';
-    ctx.beginPath();
-    ctx.arc(px, py, size * 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'hsla(' + p.hue + ', 75%, ' + (p.light + 12) + '%, ' + alpha + ')';
-    ctx.beginPath();
-    ctx.arc(px, py, size, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // 刺
-  roseThorns.forEach(thorn => {
-    thorn.pulse += 0.03;
-    const isHovered = thorn === roseHoveredThorn;
-    const glowScale = isHovered ? 1.8 : 1 + Math.sin(thorn.pulse) * 0.1;
-    const glow = ctx.createRadialGradient(thorn.x, thorn.y, 0, thorn.x, thorn.y, 14 * glowScale);
-    if (isHovered) {
-      glow.addColorStop(0, 'rgba(255, 230, 180, 0.7)');
-      glow.addColorStop(1, 'rgba(255, 230, 180, 0)');
-    } else {
-      glow.addColorStop(0, 'rgba(180, 210, 255, 0.18)');
-      glow.addColorStop(1, 'rgba(180, 210, 255, 0)');
-    }
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(thorn.x, thorn.y, 14 * glowScale, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.save();
-    ctx.translate(thorn.x, thorn.y);
-    const len = thorn.size * 0.9;
-    const wid = thorn.size * 0.18;
-    const grad = ctx.createLinearGradient(0, 0, thorn.side * len, 0);
-    if (isHovered) {
-      grad.addColorStop(0, 'rgba(255, 245, 210, 0.9)');
-      grad.addColorStop(1, 'rgba(255, 220, 160, 0.5)');
-    } else {
-      grad.addColorStop(0, 'rgba(220, 235, 255, 0.55)');
-      grad.addColorStop(1, 'rgba(160, 190, 230, 0.2)');
-    }
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.moveTo(0, -wid);
-    ctx.lineTo(thorn.side * len, 0);
-    ctx.lineTo(0, wid);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-  });
+  setTimeout(() => { if (card.parentElement) card.remove(); }, 8000);
 }
 
 function roseLoop() {
