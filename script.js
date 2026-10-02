@@ -869,7 +869,7 @@ function showRoseCard(thorn) {
 
   container.appendChild(card);
   requestAnimationFrame(() => card.classList.add('show'));
-  setTimeout(() => { if (card.parentElement) card.remove(); }, 8000);
+  setTimeout(() => { if (card.parentElement) card.remove(); }, 20000);
 }
 
 function hideRoseCard() {
